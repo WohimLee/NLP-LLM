@@ -2,8 +2,13 @@
 
 - GitHub: https://github.com/hiyouga/LLaMA-Factory
 >环境搭建
+- 清华源: -i https://pypi.tuna.tsinghua.edu.cn/simple 
+- 阿里源: --index-url https://mirrors.aliyun.com/pypi/simple
 ```sh
 git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git
+
+conda create -n azen python=3.9
+
 cd LLaMA-Factory
 pip install -e ".[torch,metrics]" # 千万别乱加 -i 源
 pip install deepspeed # 必装
@@ -13,13 +18,11 @@ pip install zhipuai nvitop # 选装
 
 - 训练说明: https://github.com/hiyouga/LLaMA-Factory/blob/main/examples/README.md
 
->全量微调
-```sh
-FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_full_sft_ds3.yaml
-```
 
 
-## 自己数据集
+
+## 训练自己的数据集
+### 1 更改配置信息
 >数据集config
 - 路径: LLaMA-Factory/data
 /dataset_info.json
@@ -45,7 +48,7 @@ FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_full_sft_ds3.
 /llama3_full_sft_ds3.yaml
 ```yaml
 ### model
-model_name_or_path: meta-llama/Meta-Llama-3-8B-Instruct # 选择模型，如 ChatGLM, QWen
+model_name_or_path: /home/ma-user/work/model/t # 选择模型，如 ChatGLM, QWen
 
 ### method
 stage: sft
@@ -84,4 +87,63 @@ val_size: 0.1
 per_device_eval_batch_size: 1
 eval_strategy: steps
 eval_steps: 500
+```
+
+### 2 启动训练
+>全量微调
+```sh
+FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_full_sft_ds3.yaml
+```
+
+### 3 推理
+>推理参数
+- 路径: checkpoint-[迭代次数]/generation_config.json
+```json
+{
+  "bos_token_id": 151643,
+  "do_sample": true,
+  "eos_token_id": [
+    151645,
+    151643
+  ],
+  "pad_token_id": 151643,
+  "repetition_penalty": 1.05,
+  "temperature": 0.7,
+  "top_k": 20,
+  "top_p": 0.8,
+  "transformers_version": "4.43.3"
+}
+```
+
+去模型官网看推理脚本
+- Model Scope: https://www.modelscope.cn/home
+- Hugging Face: 
+
+```py
+# from modelscope import AutoModelForCausalLM, AutoTokenizer # 这里改成 transformers
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+device = "cuda"  # the device to load the model onto
+model_name_or_path = "qwen/Qwen2-7B"
+model = AutoModelForCausalLM.from_pretrained(
+  model_name_or_path,
+  torch_dtype="auto",
+  device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+
+prefix = "北京是中国的首都"
+model_inputs = tokenizer([prefix], return_tensors="pt").to(device)
+
+generated_ids = model.generate(
+  model_inputs.input_ids,
+  max_new_tokens=400,
+  repetition_penalty=1.15
+)
+generated_ids = [
+  output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+]
+
+response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+print(response)
 ```
