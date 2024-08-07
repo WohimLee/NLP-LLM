@@ -60,7 +60,7 @@ deepspeed: examples/deepspeed/ds_z3_config.json
 dataset: identity,alpaca_en_demo # 训练的数据集名称
 template: llama3 # 看语言选, 中文用 qwen
 cutoff_len: 1024
-max_samples: 1000
+max_samples: 1000 # 最大训练的条数, 数据集有2700, 想全部跑完就得写2700以上
 overwrite_cache: true
 preprocessing_num_workers: 16
 

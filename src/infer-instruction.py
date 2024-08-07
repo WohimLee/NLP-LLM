@@ -1,12 +1,14 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 device = "cuda" # the device to load the model onto
 
+
+path = "/home/ma-user/work/01440561/01449344/output/checkpoint-56"
 model = AutoModelForCausalLM.from_pretrained(
-    "/home/ma-user/work/01440561/01449344/output/checkpoint-168",
+    path,
     torch_dtype="auto",
     device_map="auto"
 )
-tokenizer = AutoTokenizer.from_pretrained("/home/ma-user/work/01440561/01449344/output/checkpoint-168")
+tokenizer = AutoTokenizer.from_pretrained(path)
 
 while True:
     prompt = input("请输入:")
