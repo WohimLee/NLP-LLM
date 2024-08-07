@@ -18,8 +18,8 @@ pip install zhipuai nvitop # 选装
 
 - 训练说明: https://github.com/hiyouga/LLaMA-Factory/blob/main/examples/README.md
 
-
-
+>迭代次数
+- 数据条数*Epoch / (GPU数*batch*梯度累积)
 
 ## 训练自己的数据集
 ### 1 更改配置信息
