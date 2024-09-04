@@ -4,6 +4,10 @@ import json
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
+import os
+
+# Only make specific GPUs visible, for example, GPUs 0, 1, and 2
+os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"  # Specify the GPU IDs you want to make visible
 
 
 if __name__ == "__main__":
@@ -37,20 +41,18 @@ if __name__ == "__main__":
             response = model.chat(tokenizer, messages)
             gt_res = item["output"]
             
-            # 初始化计数器
 
             # 计算 TP, TN, FP, FN
-            for true_label, pred_label in zip(gt_res, response):
-                if true_label == "包含" and pred_label == "包含":
-                    TP += 1
-                elif true_label == "不包含" and pred_label == "不包含":
-                    TN += 1
-                elif true_label == "不包含" and pred_label == "包含":
-                    FP += 1
-                elif true_label == "包含" and pred_label == "不包含":
-                    FN += 1
+            if gt_res == "包含" and response == "包含":
+                TP += 1
+            elif gt_res == "不包含" and response == "不包含":
+                TN += 1
+            elif gt_res == "不包含" and response == "包含":
+                FP += 1
+            elif gt_res == "包含" and response == "不包含":
+                FN += 1
 
-            if idx+1 % 100 == 0:
+            if (idx+1) % 1000 == 0:
                 # 计算准确率
                 accuracy = (TP + TN) / (TP + TN + FP + FN)
 
