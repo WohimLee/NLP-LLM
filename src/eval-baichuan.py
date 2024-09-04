@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     with open(test_json, "r", encoding='utf-8') as f:
         data = json.load(f)
-        for idx, item in tqdm(enumerate(data), desc="Processing json"):
+        for idx, item in tqdm(enumerate(data), desc="Processing json", total=len(data)):
             prompt = item["instruction"] + item["input"]
             messages = [{"role": "user", "content": prompt}]
             response = model.chat(tokenizer, messages)
