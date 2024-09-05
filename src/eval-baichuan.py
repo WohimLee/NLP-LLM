@@ -3,18 +3,18 @@ import torch
 import json
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
-
+from datetime import datetime
 import os
 
 # Only make specific GPUs visible, for example, GPUs 0, 1, and 2
-os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"  # Specify the GPU IDs you want to make visible
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"  # Specify the GPU IDs you want to make visible
 
 
 if __name__ == "__main__":
-    test_json = "my_test_1_90.json"
-    label_xlsx = "data/shunfeng/label-v3.xlsx"
+    test_json = "/home/ma-user/work/azen/LLaMA-Factory/data/my_test_1_90.json"
+    label_xlsx = "/home/ma-user/work/azen/LLaMA-Factory/data/label-v3.xlsx"
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_dir = "/home/ma-user/work/model/Baichuan2-7B-Chat/Baichuan2-7B-Chat"
+    model_dir = "/home/ma-user/work/azen/LLaMA-Factory/saves/checkpoint-123"
     tokenizer = AutoTokenizer.from_pretrained(
             model_dir, 
             device_map="auto",
@@ -58,6 +58,14 @@ if __name__ == "__main__":
 
                 # 计算召回率
                 recall = TP / (TP + FN)
+                # Get the current time for logging
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                # Append the metrics to a .txt file
+                with open('metrics_history.txt', 'a') as file:
+                    file.write(f"Timestamp: {current_time}\n")
+                    file.write(f"Samples: {idx+1}, Accuracy: {accuracy:.4f}, Recall: {recall:.4f}\n")
+                    file.write("-" * 40 + "\n")
                 print(f'Samples: {idx+1} items, Accuracy: {accuracy:.2f}, Recall: {recall:.2f}')
         
         # 计算准确率
@@ -65,4 +73,9 @@ if __name__ == "__main__":
 
         # 计算召回率
         recall = TP / (TP + FN)
+        # Append the metrics to a .txt file
+        with open('metrics_history.txt', 'a') as file:
+            file.write(f"Timestamp: {current_time}\n")
+            file.write(f"Samples: {idx+1}, Accuracy: {accuracy:.4f}, Recall: {recall:.4f}\n")
+            file.write("-" * 60 + "\n")
         print(f'Final Results: Accuracy: {accuracy:.2f}, Recall: {recall:.2f}')
