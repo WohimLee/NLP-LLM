@@ -131,7 +131,7 @@ if __name__ == "__main__":
     print_model_parameters(model)
     
     # 使用给定的输入文本进行推理
-    inference(model, tokenizer,"我们")
+    inference(model, tokenizer, "我们")
 
     # 加载数据集
     # dataset_name_or_path = '1_poem_0.05k.jsonl'  # 可以替换为本地文件夹路径
